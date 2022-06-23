@@ -1,0 +1,9 @@
+pkg: github.com/staryjie/keyauth
+name: keyauth
+description: 用户中心
+enable_keyauth: false
+enable_mysql: false
+enable_mongodb: true
+gen_example: true
+http_framework: go-restful
+enable_cache: false
