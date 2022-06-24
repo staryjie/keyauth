@@ -24,13 +24,14 @@ type service struct {
 }
 
 func (s *service) Config() error {
-
+	// 依赖MongoDB的DB对象
 	db, err := conf.C().Mongo.GetDB()
 	if err != nil {
 		return err
 	}
-	s.col = db.Collection(s.Name())
 
+	// 获取需要连接的Collection， 通过Collection对象完成对数据的增删改查
+	s.col = db.Collection(s.Name())
 	s.log = zap.L().Named(s.Name())
 	return nil
 }

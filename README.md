@@ -2,6 +2,15 @@
 
 用户中心
 
+## MongoDB
+
+1. 如何连接MongoDB，以及MongoDB的配置
+2. 基于MongoDB的CRUD
+    - bson struct tag：用于MongoDB保存数据时，完成Object -> BSON的映射
+    - "_id"：内置的bson tag，类似于MySQL中的主键  _:代表倒序索引 ， 不需要额外多创建一个Index，直接使用`_id`即可
+    - 通过DB对象的Collection对象来进行数据的CRUD
+    -
+
 ## 架构图
 
 ## 项目说明

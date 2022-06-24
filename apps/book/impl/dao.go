@@ -20,6 +20,9 @@ func (s *service) save(ctx context.Context, ins *book.Book) error {
 	return nil
 }
 
+// GET, Describe
+// filter 过滤器(Collection),类似于MySQL中的WHERE条件 filter({ k = v })
+// 调用Decode方法进行反序列化，将 bytes --> Object （通过BSON TAG进行转换）
 func (s *service) get(ctx context.Context, id string) (*book.Book, error) {
 	filter := bson.M{"_id": id}
 
@@ -41,18 +44,22 @@ func newQueryBookRequest(r *book.QueryBookRequest) *queryBookRequest {
 	}
 }
 
+// 把QueryReq转换成MongoDB中的过滤条件
 type queryBookRequest struct {
 	*book.QueryBookRequest
 }
 
+// Find参数构建
 func (r *queryBookRequest) FindOptions() *options.FindOptions {
 	pageSize := int64(r.Page.PageSize)
 	skip := int64(r.Page.PageSize) * int64(r.Page.PageNumber-1)
 
 	opt := &options.FindOptions{
+		// 排序
 		Sort: bson.D{
 			{Key: "create_at", Value: -1},
 		},
+		// 分页
 		Limit: &pageSize,
 		Skip:  &skip,
 	}
@@ -60,6 +67,8 @@ func (r *queryBookRequest) FindOptions() *options.FindOptions {
 	return opt
 }
 
+// 过滤条件构建
+// 由于MongoDB支持嵌套，类似于JSON，如何过滤嵌套里面的条件，使用.访问嵌套对象属性
 func (r *queryBookRequest) FindFilter() bson.M {
 	filter := bson.M{}
 	if r.Keywords != "" {
@@ -71,6 +80,8 @@ func (r *queryBookRequest) FindFilter() bson.M {
 	return filter
 }
 
+// LIST, Query, 一般都会有很多条件（分页，关键字，条件过滤，排序 ...）
+// 需要单独做一个过滤参数构建
 func (s *service) query(ctx context.Context, req *queryBookRequest) (*book.BookSet, error) {
 	resp, err := s.col.Find(ctx, req.FindFilter(), req.FindOptions())
 
@@ -99,6 +110,7 @@ func (s *service) query(ctx context.Context, req *queryBookRequest) (*book.BookS
 	return set, nil
 }
 
+// UpdateByID,通过主键更新一个对象
 func (s *service) update(ctx context.Context, ins *book.Book) error {
 	if _, err := s.col.UpdateByID(ctx, ins.Id, ins); err != nil {
 		return exception.NewInternalServerError("inserted book(%s) document error, %s",
@@ -108,6 +120,7 @@ func (s *service) update(ctx context.Context, ins *book.Book) error {
 	return nil
 }
 
+// 删除操作
 func (s *service) deleteBook(ctx context.Context, ins *book.Book) error {
 	if ins == nil || ins.Id == "" {
 		return fmt.Errorf("book is nil")
